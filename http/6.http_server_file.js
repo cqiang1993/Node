@@ -3,6 +3,9 @@ var url = require('url');
 var fs = require('fs');
 var util = require('util');
 var querystring = require('querystring');
+var types = {
+    'image/jpeg':'.jpg'
+}
 
 var server = http.createServer();
 
@@ -12,7 +15,7 @@ server.on('request',function(req,res){
 	//req.setEncoding('utf8');
 	if(pathname == '/'){
 		res.writeHeader(200,{'Content-Type':'text/html;charset=utf8'})
-		fs.createReadStream('./formdata.html').pipe(res);
+		fs.createReadStream('./index.html').pipe(res);
 	}else if(pathname == '/get'){
 		var obj = querystring.parse(urlObj.query);
 		for(var attr in obj){
@@ -21,7 +24,7 @@ server.on('request',function(req,res){
 		res.writeHeader(200,{'Content-Type':'text/html;charset=utf8'})
 		res.end(JSON.stringify(obj));
 	}else if(pathname == '/file'){
-        //req.pipe(fs.createWriteStream('./form.txt'));
+        req.pipe(fs.createWriteStream('./form.txt'));
         var buffers = [];
         req.on('data',function(chunk){
             buffers.push(chunk);
@@ -39,11 +42,27 @@ server.on('request',function(req,res){
                         i++;
                         status='FIELD';
                     }else if(status == 'FIELD'){
-                        i+=3;
-                        status = "VALUE";
+                        if(final.slice(i+2,i+14).toString()=="Content-Type"){
+                            i++;
+                        }else{
+                            i+=3;
+                            status = "VALUE";
+                        }
                     }else if(status == "VALUE"){
                         var fieldname = /name="(\w+)"/.exec(new Buffer(field).toString())[1];
-                        body[fieldname] = new Buffer(value).toString();
+                        var contentType = /Content-Type: ((\w|\/)+)/.exec(new Buffer(field).toString());
+                        if(contentType){
+                            contentType = contentType[1];
+                            var fName =  ''+Date.now()+(types[contentType]);
+                            fs.writeFileSync(fName,new Buffer(value));
+                            body[fieldname] = {
+                                name:fName,
+                                type:contentType,
+                                path:fName
+                            };
+                        }else{
+                            body[fieldname] = new Buffer(value).toString();
+                        }
                         i++;
                         status='SEP'
                         sep.length = 0;
