@@ -21,7 +21,15 @@ server.on('request',function(req,res){
 		res.writeHeader(200,{'Content-Type':'text/html;charset=utf8'})
 		res.end(JSON.stringify(obj));
 	}else if(pathname == '/post'){
-		res.end('post')
+        var result = ''
+        req.on('data',function(chunk){
+            result+=chunk;
+        });
+        req.on('end',function(){
+            var obj = querystring.parse(result);
+            res.writeHeader(200,{'Content-Type':'text/html;charset=utf8'})
+            res.end(JSON.stringify(obj));
+        })
 	}else{
 		res.end('404');
 	}
