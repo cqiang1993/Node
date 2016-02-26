@@ -5,7 +5,7 @@ var util = require('util');
 var querystring = require('querystring');
 var types = {
     'image/jpeg':'.jpg'
-}
+};
 
 var server = http.createServer();
 
@@ -14,17 +14,17 @@ server.on('request',function(req,res){
 	var pathname = urlObj.pathname;
 	//req.setEncoding('utf8');
 	if(pathname == '/'){
-		res.writeHeader(200,{'Content-Type':'text/html;charset=utf8'})
+		res.writeHeader(200,{'Content-Type':'text/html;charset=utf8'});
 		fs.createReadStream('./index.html').pipe(res);
 	}else if(pathname == '/get'){
 		var obj = querystring.parse(urlObj.query);
 		for(var attr in obj){
 			console.log(attr,decodeURIComponent(obj[attr]));
 		}
-		res.writeHeader(200,{'Content-Type':'text/html;charset=utf8'})
+		res.writeHeader(200,{'Content-Type':'text/html;charset=utf8'});
 		res.end(JSON.stringify(obj));
 	}else if(pathname == '/file'){
-        req.pipe(fs.createWriteStream('./form.txt'));
+        //req.pipe(fs.createWriteStream('./form.txt'));
         var buffers = [];
         req.on('data',function(chunk){
             buffers.push(chunk);
@@ -49,7 +49,7 @@ server.on('request',function(req,res){
                             status = "VALUE";
                         }
                     }else if(status == "VALUE"){
-                        var fieldname = /name="(\w+)"/.exec(new Buffer(field).toString())[1];
+                        var fieldname = /name="(\w+)"/.exec(new Buffer(field).toString());
                         var contentType = /Content-Type: ((\w|\/)+)/.exec(new Buffer(field).toString());
                         if(contentType){
                             contentType = contentType[1];
@@ -64,7 +64,7 @@ server.on('request',function(req,res){
                             body[fieldname] = new Buffer(value).toString();
                         }
                         i++;
-                        status='SEP'
+                        status='SEP';
                         sep.length = 0;
                         field.length = 0;
                         value.length = 0;
@@ -79,10 +79,21 @@ server.on('request',function(req,res){
                     }
                 }
             }
-            res.end(JSON.stringify(body));
+            res.setHeader('Content-Type','text/html');
+            res.write('<h1>'+body['name="username",username']+'</h1>');
+            res.write('<h1>'+body['name="email",email']+'</h1>');
+            res.write('<img src="'+body['name="avatar",avatar'].path+'"/>');
+            res.end();
         });
 	}else{
-		res.end('404');
+        fs.exists('.'+pathname,function(exists){
+            if(exists){
+                fs.createReadStream('.'+pathname).pipe(res);
+            }else{
+                res.end('404');
+            }
+        });
+
 	}
 });
 
