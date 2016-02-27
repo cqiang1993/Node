@@ -14,7 +14,7 @@ server.on('request',function(req,res){
     //   /post?name=zfpx&age=6
     var urlObj = url.parse(req.url,false);
     var pathname = urlObj.pathname;
-    req.setEncoding('utf8');
+    //req.setEncoding('utf8');
     if(pathname == '/'){
         fs.createReadStream('./index.html').pipe(res);
     }else if(pathname == '/get'){
@@ -23,12 +23,21 @@ server.on('request',function(req,res){
         res.writeHead(200,{'Content-Type':'text/html;charset=utf8'});
         res.end(JSON.stringify(obj));
     } else if(pathname == '/post'){
-        var result = '';
+        var rawBody = [];
         req.on('data',function(chunk){
-            result+=chunk;
+            rawBody.push(chunk);
         });
         req.on('end',function(){
-            var obj = querystring.parse(result);
+            var obj = {};
+            var contentType = req.headers['content-type'];
+            if(contentType == 'application/json'){
+                 obj = JSON.parse(Buffer.concat(rawBody).toString());
+            }else if(contentType == 'application/xml'){
+                var xml2js = require('xml2js');
+                xml2js.parseString(rawBody,function(err,res){
+                     obj = res;
+                });
+            }
             res.writeHead(200,{'Content-Type':'text/html;charset=utf8'});
             res.end(JSON.stringify(obj));
         });
