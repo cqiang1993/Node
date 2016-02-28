@@ -16,7 +16,7 @@ server.on('request',function(req,res){
     var pathname = urlObj.pathname;
     req.setEncoding('utf8');
     if(pathname == '/'){
-        fs.createReadStream('./index.html').pipe(res);
+        fs.createReadStream('./routes.html').pipe(res);
     }else if(pathname == '/get'){
         // /get?username=zfxp&email=zfpx%40126.com
         var obj = querystring.parse(urlObj.query);

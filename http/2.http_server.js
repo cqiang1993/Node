@@ -14,7 +14,7 @@ server.on('request',function(req,res){
     var urlObj = url.parse(req.url,true);
     var pathname = urlObj.pathname;
     if(pathname == '/'){
-        fs.createReadStream('./index.html').pipe(res);
+        fs.createReadStream('./routes.html').pipe(res);
     }else if(pathname='/post'){
         var result = [];
         req.on('data',function(data){

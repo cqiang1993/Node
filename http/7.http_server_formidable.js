@@ -12,7 +12,7 @@ server.on('request',function(req,res){
 	//req.setEncoding('utf8');
 	if(pathname == '/'){
 		res.writeHeader(200,{'Content-Type':'text/html;charset=utf8'});
-		fs.createReadStream('./index.html').pipe(res);
+		fs.createReadStream('./routes.html').pipe(res);
 	}else if(pathname == '/get'){
 		var obj = querystring.parse(urlObj.query);
 		for(var attr in obj){
